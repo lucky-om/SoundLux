@@ -119,14 +119,7 @@ export default function Footer() {
                 href={`https://github.com/${member.github}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  textDecoration: 'none',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.9rem'
-                }}
+                className="team-card"
               >
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--neon-cyan)', boxShadow: '0 0 8px var(--neon-cyan)' }}></div>
                 {member.name}

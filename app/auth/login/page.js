@@ -8,6 +8,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -49,7 +50,16 @@ export default function LoginPage() {
           </div>
           <div className="input-group">
             <label className="input-label" htmlFor="login-password">Password</label>
-            <input id="login-password" type="password" className="input" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
+            <div style={{ position: 'relative' }}>
+              <input id="login-password" type={showPassword ? 'text' : 'password'} className="input" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem' }}
+              >
+                {showPassword ? '👁️‍🗨️' : '👁️'}
+              </button>
+            </div>
           </div>
           <button type="submit" className="btn btn-primary btn-full" disabled={loading} id="login-submit-btn">
             {loading ? '⏳ Signing in...' : '🔑 Sign In'}

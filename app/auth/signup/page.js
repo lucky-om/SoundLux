@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 export default function SignupPage() {
   const router = useRouter();
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -14,13 +15,16 @@ export default function SignupPage() {
   const handleSignup = async (e) => {
     e.preventDefault();
     if (form.password !== form.confirm) { setError('Passwords do not match'); return; }
-    if (form.password.length < 6) { setError('Password must be at least 6 characters'); return; }
+    if (form.password.length < 8) { setError('Password must be at least 8 characters'); return; }
     setLoading(true); setError('');
     try {
       const { error: err } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
-        options: { data: { full_name: form.name } },
+        options: { 
+          data: { full_name: form.name },
+          emailRedirectTo: 'https://soundlux.luckyverse.tech' 
+        },
       });
       if (err) throw err;
       setSuccess(true);
@@ -74,11 +78,29 @@ export default function SignupPage() {
           </div>
           <div className="input-group">
             <label className="input-label" htmlFor="signup-password">Password</label>
-            <input id="signup-password" type="password" className="input" placeholder="Min 6 characters" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required />
+            <div style={{ position: 'relative' }}>
+              <input id="signup-password" type={showPassword ? 'text' : 'password'} className="input" placeholder="Min 8 characters" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem' }}
+              >
+                {showPassword ? '👁️‍🗨️' : '👁️'}
+              </button>
+            </div>
           </div>
           <div className="input-group">
             <label className="input-label" htmlFor="signup-confirm">Confirm Password</label>
-            <input id="signup-confirm" type="password" className="input" placeholder="Repeat password" value={form.confirm} onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))} required />
+            <div style={{ position: 'relative' }}>
+              <input id="signup-confirm" type={showPassword ? 'text' : 'password'} className="input" placeholder="Repeat password" value={form.confirm} onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))} required />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem' }}
+              >
+                {showPassword ? '👁️‍🗨️' : '👁️'}
+              </button>
+            </div>
           </div>
           <button type="submit" className="btn btn-primary btn-full" disabled={loading} id="signup-submit-btn">
             {loading ? '⏳ Creating account...' : '🚀 Create Account'}
