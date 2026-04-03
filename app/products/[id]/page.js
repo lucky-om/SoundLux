@@ -1,5 +1,5 @@
 'use client';
-import { use, useState } from 'react';
+import { use, useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import { PRODUCTS, formatPrice } from '@/lib/data';
 import { useCart } from '@/lib/store';
@@ -7,9 +7,7 @@ import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
 
 const MOCK_REVIEWS = [
-  { id: 1, name: 'Khushi Patel', rating: 5, title: 'Absolutely incredible!', body: 'Best purchase of the year. The sound quality is out of this world. Active noise cancellation is top tier — perfect for my daily commute.', date: '2026-03-15' },
-  { id: 2, name: 'Lucky Mehta', rating: 4, title: 'Premium quality, worth every rupee', body: 'Build quality is excellent and comfort is amazing even after hours of use. Slight learning curve for the controls but nothing major.', date: '2026-03-08' },
-  { id: 3, name: 'Krisha Melwala', rating: 5, title: 'Game changer for music lovers', body: 'I can literally hear details in songs I have never noticed before. The bass is punchy without being overwhelming. Highly recommend!', date: '2026-02-22' },
+  { id: 1, name: 'Khushi Patel', rating: 5, title: 'Absolutely incredible!', body: 'Best purchase of the year. The sound quality is out of this world. Active noise cancellation is top tier — perfect for my daily commute.', date: '2026-03-15' }
 ];
 
 function StarRating({ rating, size = 'sm' }) {
@@ -37,6 +35,25 @@ export default function ProductDetailPage({ params }) {
   const [reviewTitle, setReviewTitle] = useState('');
   const [reviews, setReviews] = useState(MOCK_REVIEWS);
 
+  // Load reviews from Supabase
+  useEffect(() => {
+     async function loadRev() {
+       const { supabase } = await import('@/lib/supabase');
+       const { data, error } = await supabase.from('reviews').select('*, profiles!reviews_user_id_fkey(full_name)').eq('product_id', product.id).order('created_at', { ascending: false });
+       if (data && !error && data.length > 0) {
+         setReviews(data.map(r => ({
+           id: r.id, 
+           name: (r.profiles && r.profiles.full_name) ? r.profiles.full_name : 'Verified Customer',
+           rating: r.rating,
+           title: r.title,
+           body: r.body,
+           date: new Date(r.created_at).toISOString().slice(0, 10)
+         })));
+       }
+     }
+     loadRev();
+  }, [product.id]);
+
   const related = PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
@@ -48,13 +65,35 @@ export default function ProductDetailPage({ params }) {
     setTimeout(() => setAdded(false), 2000);
   };
 
-  const handleReview = (e) => {
+  const handleReview = async (e) => {
     e.preventDefault();
     if (!reviewText || !userRating) return;
-    setReviews(prev => [{
+    
+    // Optimistic UI
+    const pendingReview = {
       id: Date.now(), name: 'You', rating: userRating,
       title: reviewTitle || 'My Review', body: reviewText, date: new Date().toISOString().slice(0, 10),
-    }, ...prev]);
+    };
+    setReviews(prev => [pendingReview, ...prev]);
+    
+    try {
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { alert('Please log in to submit a review'); return; }
+      const { error } = await supabase.from('reviews').insert({
+         product_id: product.id,
+         user_id: session.user.id,
+         rating: userRating,
+         title: reviewTitle || 'My Review',
+         body: reviewText
+      });
+      if (error) {
+         alert('Looks like you already reviewed this product!');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    
     setReviewText(''); setReviewTitle(''); setUserRating(0);
   };
 

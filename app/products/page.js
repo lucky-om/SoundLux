@@ -7,6 +7,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
   const [selectedBrand, setSelectedBrand] = useState('all');
+  const [selectedPrice, setSelectedPrice] = useState('all');
   const [sort, setSort] = useState('featured');
   const [page, setPage] = useState(1);
   const PER_PAGE = 9;
@@ -25,6 +26,13 @@ export default function ProductsPage() {
     }
     if (selectedCat !== 'all') results = results.filter(p => p.category === selectedCat);
     if (selectedBrand !== 'all') results = results.filter(p => p.brand === selectedBrand);
+    if (selectedPrice !== 'all') {
+      const p = selectedPrice;
+      if (p === 'u10') results = results.filter(r => r.price < 10000);
+      else if (p === '10-25') results = results.filter(r => r.price >= 10000 && r.price <= 25000);
+      else if (p === '25-50') results = results.filter(r => r.price > 25000 && r.price <= 50000);
+      else if (p === 'a50') results = results.filter(r => r.price > 50000);
+    }
     switch (sort) {
       case 'price-asc': results.sort((a, b) => a.price - b.price); break;
       case 'price-desc': results.sort((a, b) => b.price - a.price); break;
@@ -33,7 +41,7 @@ export default function ProductsPage() {
       default: results.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
     }
     return results;
-  }, [search, selectedCat, selectedBrand, sort]);
+  }, [search, selectedCat, selectedBrand, selectedPrice, sort]);
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -96,12 +104,23 @@ export default function ProductsPage() {
               <div className="filter-title">Price Range</div>
               <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
                 {[
-                  ['Under ₹10,000', 'noise-cancelling'],
-                  ['₹10K – ₹25K', null],
-                  ['₹25K – ₹50K', null],
-                  ['Above ₹50K', null],
-                ].map(([label]) => (
-                  <div key={label} style={{ padding: '0.3rem 0', cursor: 'pointer' }}>{label}</div>
+                  ['All Prices', 'all'],
+                  ['Under ₹10,000', 'u10'],
+                  ['₹10K – ₹25K', '10-25'],
+                  ['₹25K – ₹50K', '25-50'],
+                  ['Above ₹50K', 'a50'],
+                ].map(([label, val]) => (
+                  <div
+                    key={label}
+                    onClick={() => { setSelectedPrice(val); setPage(1); }}
+                    style={{ 
+                      padding: '0.3rem 0', cursor: 'pointer', 
+                      color: selectedPrice === val ? 'var(--neon-cyan)' : 'inherit',
+                      fontWeight: selectedPrice === val ? 700 : 400
+                    }}
+                  >
+                    {label}
+                  </div>
                 ))}
               </div>
             </div>

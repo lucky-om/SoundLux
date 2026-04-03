@@ -1,6 +1,6 @@
 'use client';
 import { useCart } from '@/lib/store';
-import { formatPrice, COUPONS } from '@/lib/data';
+import { formatPrice } from '@/lib/data';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -30,11 +30,16 @@ export default function CartPage() {
     : 0;
   const total = cartTotal + shipping + tax - discount;
 
-  const applyCoupon = () => {
-    const found = COUPONS.find(c => c.code === coupon.toUpperCase());
-    if (!found) { setCouponError('Invalid coupon code'); return; }
-    if (cartTotal < found.minOrder) { setCouponError(`Minimum order ${formatPrice(found.minOrder)} required`); return; }
-    setAppliedCoupon(found);
+  const applyCoupon = async () => {
+    const { supabase } = await import('@/lib/supabase');
+    const { data: found, error } = await supabase.from('coupons').select('*').eq('code', coupon.toUpperCase()).single();
+    if (error || !found) { setCouponError('Invalid coupon code'); return; }
+    if (cartTotal < found.min_order) { setCouponError(`Minimum order ${formatPrice(found.min_order)} required`); return; }
+    setAppliedCoupon({
+      code: found.code,
+      type: found.discount_type,
+      value: found.discount_value
+    });
     setCouponError('');
   };
 

@@ -150,6 +150,18 @@ CREATE POLICY "Users create orders" ON public.orders FOR INSERT WITH CHECK (auth
 CREATE POLICY "Reviews are public" ON public.reviews FOR SELECT USING (true);
 CREATE POLICY "Users write own reviews" ON public.reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- 8. Wishlist
+CREATE TABLE IF NOT EXISTS public.wishlist (
+  id SERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  product_id INTEGER REFERENCES public.products(id) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, product_id)
+);
+ALTER TABLE public.wishlist ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own wishlist" ON public.wishlist USING (auth.uid() = user_id);
+
+
 -- =============================================
 -- SEED DATA — Categories
 -- =============================================

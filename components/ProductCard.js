@@ -15,8 +15,8 @@ function StarRating({ rating }) {
 }
 
 export default function ProductCard({ product }) {
-  const { addToCart } = useCart();
-  const [liked, setLiked] = useState(false);
+  const { addToCart, wishlist, toggleWishlist } = useCart();
+  const liked = wishlist ? wishlist.includes(product.id) : false;
   const [added, setAdded] = useState(false);
 
   const discount = product.originalPrice
@@ -54,7 +54,7 @@ export default function ProductCard({ product }) {
           )}
           <button
             className={`product-card-wish${liked ? ' liked' : ''}`}
-            onClick={e => { e.preventDefault(); setLiked(!liked); }}
+            onClick={e => { e.preventDefault(); toggleWishlist(product.id); }}
             title="Wishlist"
           >
             {liked ? '❤️' : '🤍'}

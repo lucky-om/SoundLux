@@ -1,6 +1,6 @@
 'use client';
 import { useCart } from '@/lib/store';
-import { formatPrice, COUPONS } from '@/lib/data';
+import { formatPrice } from '@/lib/data';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -37,11 +37,26 @@ export default function CheckoutPage() {
     : 0;
   const total = cartTotal + shipping + tax - discount;
 
-  const applyCoupon = () => {
-    const found = COUPONS.find(c => c.code === coupon.toUpperCase());
-    if (!found) { setCouponError('Invalid coupon code'); return; }
-    if (cartTotal < found.minOrder) { setCouponError(`Minimum order ${formatPrice(found.minOrder)} required`); return; }
-    setAppliedCoupon(found); setCouponError('');
+  const applyCoupon = async () => {
+    const { supabase } = await import('@/lib/supabase');
+    const { data: found, error } = await supabase.from('coupons').select('*').eq('code', coupon.toUpperCase()).single();
+    if (error || !found) { setCouponError('Invalid coupon code'); return; }
+    if (cartTotal < found.min_order) { setCouponError(`Minimum order ${formatPrice(found.min_order)} required`); return; }
+    setAppliedCoupon({
+      code: found.code,
+      type: found.discount_type,
+      value: found.discount_value
+    });
+    setCouponError('');
+  };
+
+  const validateAddress = () => {
+    const { firstName, lastName, email, phone, address, city, state, pincode } = form;
+    if (!firstName || !lastName || !email || !phone || !address || !city || !state || !pincode) {
+      alert("Please fill in all mandatory address details to continue.");
+      return;
+    }
+    setStep(2);
   };
 
   const handlePlaceOrder = async () => {
@@ -190,7 +205,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
-                <button className="btn btn-primary btn-lg" onClick={() => setStep(2)} style={{ width: '100%' }}>
+                <button className="btn btn-primary btn-lg" onClick={validateAddress} style={{ width: '100%' }}>
                   Continue to Payment →
                 </button>
               </div>
