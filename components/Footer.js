@@ -86,7 +86,7 @@ export default function Footer() {
               { name: 'Rana Shraddha', github: 'Rana-Shraddha' },
               { name: 'Gautam Aryan', github: 'Aryan-Gautam-8141' }
             ].map((member) => (
-              <a key={member.name} href={`https://github.com/${member.name}`} target="_blank" rel="noopener noreferrer" className="team-card" title="View GitHub Profile">
+              <a key={member.name} href={`https://github.com/${member.github}`} target="_blank" rel="noopener noreferrer" className="team-card" title="View GitHub Profile">
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--neon-cyan)', boxShadow: '0 0 8px var(--neon-cyan)' }}></div>
                 {member.name}
               </a>
