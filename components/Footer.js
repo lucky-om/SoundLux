@@ -68,7 +68,7 @@ export default function Footer() {
 
           <div>
             <div style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--neon-cyan)' }}>Account</div>
-            {[['Login', '/auth/login'], ['Sign Up', '/auth/signup'], ['My Orders', '/orders'], ['Cart', '/cart']].map(([label, href]) => (
+            {[['Login', '/auth/login'], ['Sign Up', '/auth/signup'], ['My Orders', '/orders'], ['Wishlist', '/wishlist'], ['Cart', '/cart']].map(([label, href]) => (
               <div key={href} style={{ marginBottom: '0.5rem' }}>
                 <Link href={href} style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}

@@ -40,6 +40,7 @@ export default function Navbar() {
             {user ? (
               <>
                 <Link href="/orders" className="btn btn-ghost btn-sm desktop-only">My Orders</Link>
+                <Link href="/wishlist" className="btn btn-ghost btn-sm desktop-only">Wishlist</Link>
                 {user.user_metadata?.role === 'admin' && (
                   <Link href="/admin" className="btn btn-ghost btn-sm desktop-only">Admin</Link>
                 )}
@@ -69,6 +70,7 @@ export default function Navbar() {
             {user ? (
               <>
                  <Link href="/orders" className="btn btn-ghost btn-sm" onClick={() => setMenuOpen(false)}>My Orders</Link>
+                 <Link href="/wishlist" className="btn btn-ghost btn-sm" onClick={() => setMenuOpen(false)}>Wishlist</Link>
                  {user.user_metadata?.role === 'admin' && (
                     <Link href="/admin" className="btn btn-ghost btn-sm" onClick={() => setMenuOpen(false)}>Admin</Link>
                  )}
