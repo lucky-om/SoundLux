@@ -19,41 +19,65 @@ export default function Footer() {
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7, maxWidth: 280 }}>
               Premium headphones from the world's best brands. Experience music the way it was meant to be heard.
             </p>
+            
+            {/* Social Media Links - Manual URLs added here */}
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
               {[
-                { label: '𝕏', key: 'x' },
-                { label: 'IG', key: 'in' },
-                { label: 'YT', key: 'yt' },
-                { label: 'in', key: 'ln' }
-              ].map(icon => (
-                <Link key={icon.key} href="/" style={{
-                  width: 36, height: 36, background: 'var(--bg-card)', border: '1px solid var(--border)',
-                  borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.9rem', fontFamily: 'Orbitron, sans-serif', fontWeight: 700, textDecoration: 'none', transition: 'all 0.2s',
-                  color: 'var(--text-secondary)'
-                }}>{icon.label}</Link>
+                { label: '@', key: 'a', url: 'https://www.sdjic.org/' },
+                { label: 'IG', key: 'ig', url: 'https://instagram.com/sdj_international_college' },
+                { label: 'YT', key: 'yt', url: 'https://youtube.com/@sdjicevents5641' },
+                { label: 'in', key: 'ln', url: 'https://linkedin.com/in/' }
+              ].map(social => (
+                <a 
+                  key={social.key} 
+                  href={social.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{
+                    width: 36, height: 36, background: 'var(--bg-card)', border: '1px solid var(--border)',
+                    borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.9rem', fontFamily: 'Orbitron, sans-serif', fontWeight: 700, textDecoration: 'none', transition: 'all 0.2s',
+                    color: 'var(--text-secondary)'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = 'var(--neon-cyan)';
+                    e.currentTarget.style.color = 'var(--text-primary)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                  }}
+                >
+                  {social.label}
+                </a>
               ))}
             </div>
           </div>
+
           <div>
             <div style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--neon-cyan)' }}>Shop</div>
             {[['All Products', '/products'], ['Wireless', '/categories/wireless'], ['Gaming', '/categories/gaming'], ['Studio', '/categories/studio'], ['Noise Cancelling', '/categories/noise-cancelling']].map(([label, href]) => (
               <div key={href} style={{ marginBottom: '0.5rem' }}>
                 <Link href={href} style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 0.2s' }}
-                  onMouseEnter={e => e.target.style.color = 'var(--text-primary)'}
-                  onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}
+                  onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
                 >{label}</Link>
               </div>
             ))}
           </div>
+
           <div>
             <div style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--neon-cyan)' }}>Account</div>
             {[['Login', '/auth/login'], ['Sign Up', '/auth/signup'], ['My Orders', '/orders'], ['Cart', '/cart']].map(([label, href]) => (
               <div key={href} style={{ marginBottom: '0.5rem' }}>
-                <Link href={href} style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem' }}>{label}</Link>
+                <Link href={href} style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+                >{label}</Link>
               </div>
             ))}
           </div>
+
           <div>
             <div style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--neon-cyan)' }}>Support</div>
             {[
@@ -64,12 +88,16 @@ export default function Footer() {
               { label: 'Track Order', href: '/orders' }
             ].map(item => (
               <div key={item.label} style={{ marginBottom: '0.5rem' }}>
-                <Link href={item.href} style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem' }}>{item.label}</Link>
+                <Link href={item.href} style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+                >{item.label}</Link>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Team Credits Section */}
         <div style={{ marginTop: '2rem', paddingTop: '3rem', borderTop: '1px solid var(--border)', textAlign: 'center', paddingBottom: '3rem' }}>
           <div style={{ marginBottom: '2rem' }}>
             <div className="hack-badge" style={{ marginBottom: '1rem' }}>
@@ -78,7 +106,7 @@ export default function Footer() {
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Developed proudly by our team for SDJ International College</p>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1.5rem' }}>
             {[
               { name: 'Patel Om', github: 'lucky-om' },
               { name: 'Patil Bhoomika', github: 'PatilBhumika28' },
@@ -86,7 +114,20 @@ export default function Footer() {
               { name: 'Rana Shraddha', github: 'Rana-Shraddha' },
               { name: 'Gautam Aryan', github: 'Aryan-Gautam-8141' }
             ].map((member) => (
-              <a key={member.name} href={`https://github.com/${member.github}`} target="_blank" rel="noopener noreferrer" className="team-card" title="View GitHub Profile">
+              <a 
+                key={member.github} 
+                href={`https://github.com/${member.github}`} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem', 
+                  textDecoration: 'none', 
+                  color: 'var(--text-primary)', 
+                  fontSize: '0.9rem' 
+                }}
+              >
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--neon-cyan)', boxShadow: '0 0 8px var(--neon-cyan)' }}></div>
                 {member.name}
               </a>
