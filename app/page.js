@@ -1,10 +1,14 @@
 import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
-import { CATEGORIES, PRODUCTS, getFeaturedProducts } from '@/lib/data';
+import { CATEGORIES } from '@/lib/data';
+import { supabase } from '@/lib/supabase';
 
-export default function HomePage() {
-  const featured = getFeaturedProducts();
-  const topPicks = PRODUCTS.slice(0, 4);
+export default async function HomePage() {
+  const { data } = await supabase.from('products').select('*').eq('is_featured', true).limit(4);
+  const featured = data ? data.map(p => ({
+     ...p, originalPrice: p.original_price, image: p.image_url, reviewCount: p.review_count,
+     category: CATEGORIES.find(c => c.id === p.category_id)?.slug || 'wireless'
+  })) : [];
 
   return (
     <>

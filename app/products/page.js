@@ -1,7 +1,8 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
 import { PRODUCTS, CATEGORIES, formatPrice } from '@/lib/data';
+import { supabase } from '@/lib/supabase';
 
 export default function ProductsPage() {
   const [search, setSearch] = useState('');
@@ -10,12 +11,27 @@ export default function ProductsPage() {
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [sort, setSort] = useState('featured');
   const [page, setPage] = useState(1);
+  const [dbProducts, setDbProducts] = useState([...PRODUCTS]);
   const PER_PAGE = 9;
 
-  const brands = useMemo(() => ['all', ...new Set(PRODUCTS.map(p => p.brand))], []);
+  useEffect(() => {
+    supabase.from('products').select('*').order('is_featured', { ascending: false }).then(({data}) => {
+      if (data) {
+        setDbProducts(data.map(p => ({
+          ...p,
+          originalPrice: p.original_price,
+          category: CATEGORIES.find(c => c.id === p.category_id)?.slug || 'wireless',
+          image: p.image_url,
+          reviewCount: p.review_count,
+        })));
+      }
+    });
+  }, []);
+
+  const brands = useMemo(() => ['all', ...new Set(dbProducts.map(p => p.brand))], [dbProducts]);
 
   const filtered = useMemo(() => {
-    let results = [...PRODUCTS];
+    let results = [...dbProducts];
     if (search) {
       const q = search.toLowerCase();
       results = results.filter(p =>
@@ -41,7 +57,7 @@ export default function ProductsPage() {
       default: results.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
     }
     return results;
-  }, [search, selectedCat, selectedBrand, selectedPrice, sort]);
+  }, [search, selectedCat, selectedBrand, selectedPrice, sort, dbProducts]);
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);

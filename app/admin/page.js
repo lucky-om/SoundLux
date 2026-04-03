@@ -1,6 +1,8 @@
 'use client';
-import { PRODUCTS, CATEGORIES, formatPrice } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { CATEGORIES, formatPrice } from '@/lib/data';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
 const MOCK_REVENUE = [
   { month: 'Oct', rev: 48000 },
@@ -12,20 +14,28 @@ const MOCK_REVENUE = [
 ];
 const maxRev = Math.max(...MOCK_REVENUE.map(r => r.rev));
 
-const TOP_PRODUCTS = PRODUCTS.sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 5);
-
-const RECENT_ORDERS = [
-  { id: 'SL-12345678', customer: 'Rahul Sharma', amount: 29990, status: 'delivered', date: '2026-03-30' },
-  { id: 'SL-87654321', customer: 'Priya Mehta', amount: 14999, status: 'shipped', date: '2026-03-31' },
-  { id: 'SL-11223344', customer: 'Arjun Patel', amount: 45000, status: 'processing', date: '2026-04-01' },
-  { id: 'SL-99887766', customer: 'Neha Singh', amount: 12990, status: 'pending', date: '2026-04-02' },
-];
-
 export default function AdminDashboard() {
-  const totalRevenue = MOCK_REVENUE.reduce((sum, r) => sum + r.rev, 0);
-  const totalProducts = PRODUCTS.length;
-  const totalOrders = RECENT_ORDERS.length + 8;
-  const avgRating = (PRODUCTS.reduce((s, p) => s + p.rating, 0) / PRODUCTS.length).toFixed(1);
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      supabase.from('products').select('*'),
+      supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(5)
+    ]).then(([prodRes, ordRes]) => {
+      if (prodRes.data) setProducts(prodRes.data);
+      if (ordRes.data) setOrders(ordRes.data);
+      setLoading(false);
+    });
+  }, []);
+
+  const totalRevenue = MOCK_REVENUE.reduce((sum, r) => sum + r.rev, 0) + orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+  const totalProducts = products.length;
+  const totalOrders = orders.length + 8; // keeping base for visual
+  const avgRating = products.length > 0 ? (products.reduce((s, p) => s + p.rating, 0) / products.length).toFixed(1) : 4.5;
+
+  const TOP_PRODUCTS = [...products].sort((a, b) => b.review_count - a.review_count).slice(0, 5);
 
   const stats = [
     { icon: '💰', label: 'Total Revenue', value: `₹${(totalRevenue / 1000).toFixed(0)}K`, color: 'var(--neon-cyan)' },
@@ -82,10 +92,10 @@ export default function AdminDashboard() {
           {TOP_PRODUCTS.map((p, i) => (
             <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: 8 }}>
               <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--neon-amber)', minWidth: 20 }}>#{i + 1}</span>
-              <img src={p.image} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+              <img src={p.image_url} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{p.brand} {p.name}</div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{p.reviewCount.toLocaleString()} reviews</div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{p.review_count?.toLocaleString()} reviews</div>
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--neon-cyan)', fontWeight: 700 }}>{formatPrice(p.price)}</div>
             </div>
@@ -98,8 +108,9 @@ export default function AdminDashboard() {
         <h3 style={{ marginBottom: '1.25rem' }}>📊 Category Distribution</h3>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
           {['wireless','noise-cancelling','gaming','studio','earbuds','budget'].map(slug => {
-            const count = PRODUCTS.filter(p => p.category === slug).length;
-            const pct = Math.round((count / PRODUCTS.length) * 100);
+            const catId = CATEGORIES.find(c => c.slug === slug)?.id || 1;
+            const count = products.filter(p => p.category_id === catId).length;
+            const pct = products.length > 0 ? Math.round((count / products.length) * 100) : 0;
             return (
               <div key={slug} style={{ flex: 1, minWidth: 100 }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.4rem', textTransform: 'capitalize' }}>{slug.replace('-', ' ')}</div>
@@ -129,15 +140,16 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {RECENT_ORDERS.map(o => (
+              {orders.map(o => (
                 <tr key={o.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '0.75rem', fontFamily: 'Orbitron, sans-serif', fontSize: '0.8rem', color: 'var(--neon-cyan)' }}>{o.id}</td>
-                  <td style={{ padding: '0.75rem', fontSize: '0.875rem' }}>{o.customer}</td>
-                  <td style={{ padding: '0.75rem', fontWeight: 700, fontSize: '0.875rem' }}>{formatPrice(o.amount)}</td>
+                  <td style={{ padding: '0.75rem', fontFamily: 'Orbitron, sans-serif', fontSize: '0.8rem', color: 'var(--neon-cyan)' }}>{o.id.substring(0,8).toUpperCase()}</td>
+                  <td style={{ padding: '0.75rem', fontSize: '0.875rem' }}>Customer ID: {o.user_id.substring(0,6)}</td>
+                  <td style={{ padding: '0.75rem', fontWeight: 700, fontSize: '0.875rem' }}>{formatPrice(o.total_amount)}</td>
                   <td style={{ padding: '0.75rem' }}><span className={`order-status status-${o.status}`}>{o.status}</span></td>
-                  <td style={{ padding: '0.75rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{o.date}</td>
+                  <td style={{ padding: '0.75rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(o.created_at).toLocaleDateString()}</td>
                 </tr>
               ))}
+              {orders.length === 0 && <tr><td colSpan="5" style={{ padding: '1rem', textAlign: 'center' }}>No live orders yet.</td></tr>}
             </tbody>
           </table>
         </div>

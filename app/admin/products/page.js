@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import { PRODUCTS, CATEGORIES, formatPrice } from '@/lib/data';
 
 const INITIAL_FORM = { name: '', brand: '', price: '', originalPrice: '', category: 'wireless', image: '', description: '', stock: '', badge: '' };
@@ -10,6 +11,24 @@ export default function AdminProductsPage() {
   const [editProduct, setEditProduct] = useState(null);
   const [form, setForm] = useState(INITIAL_FORM);
   const [search, setSearch] = useState('');
+  
+
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase.from('products').select('*').order('id', { ascending: false });
+      if (data) {
+        setProducts(data.map(p => ({
+          ...p,
+          originalPrice: p.original_price,
+          category: CATEGORIES.find(c => c.id === p.category_id)?.slug || 'wireless',
+          image: p.image_url,
+          reviewCount: p.review_count,
+        })));
+      }
+    }
+    load();
+  }, []);
 
   const filtered = products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -24,19 +43,42 @@ export default function AdminProductsPage() {
   };
   const closeModal = () => { setModal(null); setEditProduct(null); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.brand || !form.price) return;
+    
+    // Fallback category logic
+    const cat = CATEGORIES.find(c => c.slug === form.category);
+    const catId = cat ? cat.id : 1;
+
     if (modal === 'add') {
-      const newProduct = { ...INITIAL_FORM, ...form, id: Date.now(), price: +form.price, originalPrice: +form.originalPrice || null, stock: +form.stock || 0, rating: 4.5, reviewCount: 0, isFeatured: false, images: [form.image], specs: {} };
-      setProducts(prev => [newProduct, ...prev]);
+      const newProduct = { 
+        name: form.name, brand: form.brand, price: +form.price, original_price: +form.originalPrice || null, 
+        category_id: catId, image_url: form.image, images: [form.image], description: form.description, 
+        stock: +form.stock || 0, badge: form.badge || null, specs: {}, is_featured: false
+      };
+      const { data, error } = await supabase.from('products').insert([newProduct]).select();
+      if (!error && data) {
+         setProducts(prev => [{...data[0], originalPrice: data[0].original_price, image: data[0].image_url, category: form.category, reviewCount: data[0].review_count}, ...prev]);
+      } else { alert("Failed to add product!"); console.error(error); }
     } else {
-      setProducts(prev => prev.map(p => p.id === editProduct.id ? { ...p, ...form, price: +form.price, originalPrice: +form.originalPrice || null, stock: +form.stock || 0 } : p));
+      const updates = { 
+        name: form.name, brand: form.brand, price: +form.price, original_price: +form.originalPrice || null, 
+        category_id: catId, image_url: form.image, description: form.description, 
+        stock: +form.stock || 0, badge: form.badge || null
+      };
+      const { error } = await supabase.from('products').update(updates).eq('id', editProduct.id);
+      if (!error) {
+        setProducts(prev => prev.map(p => p.id === editProduct.id ? { ...p, ...form, price: +form.price, originalPrice: +form.originalPrice || null, stock: +form.stock || 0 } : p));
+      } else { alert("Failed to update!"); console.error(error); }
     }
     closeModal();
   };
 
-  const handleDelete = (id) => {
-    if (confirm('Delete this product?')) setProducts(prev => prev.filter(p => p.id !== id));
+  const handleDelete = async (id) => {
+    if (confirm('Delete this product permanently?')) {
+       await supabase.from('products').delete().eq('id', id);
+       setProducts(prev => prev.filter(p => p.id !== id));
+    }
   };
 
   return (

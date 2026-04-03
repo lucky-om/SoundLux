@@ -2,6 +2,7 @@
 import { use } from 'react';
 import { notFound } from 'next/navigation';
 import { CATEGORIES, PRODUCTS, getProductsByCategory } from '@/lib/data';
+import { supabase } from '@/lib/supabase';
 import ProductCard from '@/components/ProductCard';
 import Link from 'next/link';
 
@@ -10,7 +11,19 @@ export default function CategoryPage({ params }) {
   const category = CATEGORIES.find(c => c.slug === slug);
   if (!category) notFound();
 
-  const products = getProductsByCategory(slug);
+  const { useState, useEffect } = require('react');
+  const [products, setProducts] = useState(() => getProductsByCategory(slug));
+
+  useEffect(() => {
+    supabase.from('products').select('*').eq('category_id', category.id).then(({data}) => {
+      if (data) {
+        setProducts(data.map(p => ({
+          ...p, originalPrice: p.original_price, image: p.image_url, reviewCount: p.review_count,
+          category: CATEGORIES.find(c => c.id === p.category_id)?.slug || 'wireless'
+        })));
+      }
+    });
+  }, [category.id]);
 
   return (
     <>

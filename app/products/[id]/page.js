@@ -1,10 +1,11 @@
 'use client';
 import { use, useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
-import { PRODUCTS, formatPrice } from '@/lib/data';
+import { PRODUCTS, CATEGORIES, formatPrice } from '@/lib/data';
 import { useCart } from '@/lib/store';
 import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
+import { supabase } from '@/lib/supabase';
 
 const MOCK_REVIEWS = [
   { id: 1, name: 'Khushi Patel', rating: 5, title: 'Absolutely incredible!', body: 'Best purchase of the year. The sound quality is out of this world. Active noise cancellation is top tier — perfect for my daily commute.', date: '2026-03-15' }
@@ -23,8 +24,31 @@ function StarRating({ rating, size = 'sm' }) {
 
 export default function ProductDetailPage({ params }) {
   const { id } = use(params);
-  const product = PRODUCTS.find(p => p.id === parseInt(id));
-  if (!product) notFound();
+  const initialFallback = PRODUCTS.find(p => p.id === parseInt(id));
+  if (!initialFallback) notFound();
+
+  const [product, setProduct] = useState(initialFallback);
+  const [related, setRelated] = useState(() => PRODUCTS.filter(p => p.category === initialFallback.category && p.id !== initialFallback.id).slice(0, 4));
+
+  useEffect(() => {
+    supabase.from('products').select('*').eq('id', parseInt(id)).single().then(({data}) => {
+      if (data) {
+        setProduct({
+          ...data, originalPrice: data.original_price, image: data.image_url, reviewCount: data.review_count,
+          category: CATEGORIES.find(c => c.id === data.category_id)?.slug || 'wireless'
+        });
+      }
+    });
+
+    supabase.from('products').select('*').neq('id', parseInt(id)).limit(4).then(({data}) => {
+      if (data) {
+        setRelated(data.map(p => ({
+          ...p, originalPrice: p.original_price, image: p.image_url, reviewCount: p.review_count,
+          category: CATEGORIES.find(c => c.id === p.category_id)?.slug || 'wireless'
+        })));
+      }
+    });
+  }, [id]);
 
   const { addToCart } = useCart();
   const [selectedImg, setSelectedImg] = useState(0);
@@ -54,7 +78,6 @@ export default function ProductDetailPage({ params }) {
      loadRev();
   }, [product.id]);
 
-  const related = PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : null;
