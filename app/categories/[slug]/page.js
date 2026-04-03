@@ -36,8 +36,8 @@ export default function CategoryPage({ params }) {
 
       {/* Category tabs */}
       <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', padding: '0.75rem 0', overflow: 'auto' }}>
-        <div className="container">
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className="container" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '0.25rem' }}>
+          <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
             {CATEGORIES.map(cat => (
               <Link
                 key={cat.slug}

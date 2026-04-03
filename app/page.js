@@ -81,7 +81,7 @@ export default function HomePage() {
               Find Your <span className="gradient-text">Perfect Sound</span>
             </h2>
           </div>
-          <div className="grid-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+          <div className="grid-3">
             {CATEGORIES.map(cat => (
               <Link
                 key={cat.slug}
@@ -101,7 +101,7 @@ export default function HomePage() {
       {/* ── FEATURED PRODUCTS ── */}
       <section className="section" style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}>
         <div className="container">
-          <div className="flex flex-between" style={{ marginBottom: '2rem' }}>
+          <div className="flex flex-between flex-wrap gap-2" style={{ marginBottom: '2rem' }}>
             <div>
               <div className="badge badge-purple" style={{ marginBottom: '0.5rem' }}>Hand-picked</div>
               <h2 style={{ fontFamily: 'Orbitron, sans-serif', fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}>

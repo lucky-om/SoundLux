@@ -10,7 +10,7 @@ export default function Footer() {
       marginTop: '4rem',
     }}>
       <div className="container">
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '3rem', marginBottom: '3rem' }}>
+        <div className="grid-4" style={{ gap: '3rem', marginBottom: '3rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
               <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg, var(--neon-cyan), var(--neon-purple))', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>🎧</div>
