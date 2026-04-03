@@ -39,11 +39,11 @@ export default function ProductDetailPage({ params }) {
   useEffect(() => {
      async function loadRev() {
        const { supabase } = await import('@/lib/supabase');
-       const { data, error } = await supabase.from('reviews').select('*, profiles!reviews_user_id_fkey(full_name)').eq('product_id', product.id).order('created_at', { ascending: false });
+       const { data, error } = await supabase.from('reviews').select('*').eq('product_id', product.id).order('created_at', { ascending: false });
        if (data && !error && data.length > 0) {
          setReviews(data.map(r => ({
            id: r.id, 
-           name: (r.profiles && r.profiles.full_name) ? r.profiles.full_name : 'Verified Customer',
+           name: 'Verified Customer',
            rating: r.rating,
            title: r.title,
            body: r.body,
